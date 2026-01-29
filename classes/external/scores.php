@@ -18,10 +18,10 @@ namespace mod_millionaire\external;
 
 use coding_exception;
 use dml_exception;
-use external_api;
-use external_function_parameters;
-use external_multiple_structure;
-use external_value;
+use core_external\external_api;
+use core_external\external_function_parameters;
+use core_external\external_multiple_structure;
+use core_external\external_value;
 use invalid_parameter_exception;
 use mod_millionaire\external\exporter\score_dto;
 use mod_millionaire\model\gamesession;
