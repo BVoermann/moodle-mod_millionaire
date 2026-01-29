@@ -28,7 +28,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_millionaire';
-$plugin->requires = 2022041900; //requires at least Moodle 4.0!
+$plugin->requires = 2025100600; //requires at least Moodle 5.1!
 $plugin->maturity = MATURITY_BETA;
-$plugin->version = 2023011200;
-$plugin->release = '0.3.17';
+$plugin->version = 2026012900;
+$plugin->release = '0.4.0';
