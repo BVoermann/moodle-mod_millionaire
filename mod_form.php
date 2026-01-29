@@ -41,8 +41,6 @@ class mod_millionaire_mod_form extends moodleform_mod {
      * Defines forms elements
      */
     public function definition() {
-        global $CFG, $DB;
-
         $mform = $this->_form;
 
         // Adding the "general" fieldset, where all the common settings are showed.
@@ -50,11 +48,7 @@ class mod_millionaire_mod_form extends moodleform_mod {
 
         // Adding the standard "name" field.
         $mform->addElement('text', 'name', get_string('millionairename', 'millionaire'), array('size' => '64'));
-        if (!empty($CFG->formatstringstriptags)) {
-            $mform->setType('name', PARAM_TEXT);
-        } else {
-            $mform->setType('name', PARAM_CLEANHTML);
-        }
+        $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
         $mform->addHelpButton('name', 'millionairename', 'millionaire');

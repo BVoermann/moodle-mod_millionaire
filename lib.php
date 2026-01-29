@@ -30,8 +30,6 @@
  */
 
 use core_completion\api;
-use mod_millionaire\model\gamesession;
-use mod_millionaire\util;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -71,6 +69,8 @@ function millionaire_supports($feature) {
         case FEATURE_MOD_INTRO:
         case FEATURE_USES_QUESTIONS:
             return true;
+        case FEATURE_MOD_PURPOSE:
+            return MOD_PURPOSE_INTERACTIVECONTENT;
         default:
             return null;
     }
@@ -205,48 +205,3 @@ function millionaire_delete_instance($id) {
     return $result;
 }
 
-/**
- * Obtains the automatic completion state for this forum based on any conditions
- * in forum settings.
- *
- * @param object $course Course
- * @param object $cm Course-module
- * @param int $userid User ID
- * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
- * @return bool True if completed, false if not, $type if conditions not set.
- * @throws dml_exception
- * @throws moodle_exception
- */
-function millionaire_get_completion_state($course, $cm, $userid, $type) {
-    list($course, $coursemodule) = get_course_and_cm_from_cmid($cm->id, 'millionaire');
-    if (!($millionaire = util::get_game($coursemodule))) {
-        throw new Exception("Can't find activity instance {$cm->instance}");
-    }
-
-    $result = $type;
-    if ($millionaire->get_completionrounds()) {
-        $value = $millionaire->get_completionrounds() <= $millionaire->count_finished_gamesessions($userid);
-        if ($type == COMPLETION_AND) {
-            $result &= $value;
-        } else {
-            $result |= $value;
-        }
-    }
-    if ($millionaire->get_completionpoints()) {
-        $value = $millionaire->get_completionrounds() <= $millionaire->calculate_total_score($userid);
-        if ($type == COMPLETION_AND) {
-            $result &= $value;
-        } else {
-            $result |= $value;
-        }
-    }
-    return $result;
-}
-
-function millionaire_perform_completion($course, $cm, $millionaire) {
-    global $USER;
-    $completion = new completion_info($course);
-    if ($completion->is_enabled($cm) == COMPLETION_TRACKING_AUTOMATIC && ($millionaire->completionrounds || $millionaire->completionpoints)) {
-        $completion->update_state($cm, COMPLETION_COMPLETE, $USER->id);
-    }
-}
