@@ -16,9 +16,6 @@
 
 namespace mod_millionaire\external;
 
-global $CFG;
-require_once($CFG->libdir . '/questionlib.php');
-
 use coding_exception;
 use core_external\external_api;
 use core_external\external_function_parameters;
@@ -31,10 +28,8 @@ use mod_millionaire\external\exporter\mdl_category_dto;
 use mod_millionaire\external\exporter\mdl_question_dto;
 use mod_millionaire\util;
 use moodle_exception;
-use core_question\local\bank\question_edit_contexts;
 use restricted_context_exception;
 use stdClass;
-use function question_category_options;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -204,25 +199,25 @@ class questionbank extends external_api {
         $renderer = $PAGE->get_renderer('core');
         $ctx = $coursemodule->context;
 
-        // load categories
-        $question_contexts = new question_edit_contexts($ctx);
-        $usable_question_contexts = $question_contexts->having_cap('moodle/question:useall');
-        $question_categories = question_category_options($usable_question_contexts);
-        /**
-         * structure of categories result:
-         * two-dimensional array with
-         * - first level (contexts): key = context name, value = array of categories in that context.
-         *   Contexts normally are 1: course, 2: course area, 3: core system.
-         * - second level (i.e. categories per context): key = "categoryId,contextId], value = name of the
-         *   category with proper indentation (visualizes hierarchy)
-         */
-        // transform categories
+        // Load question categories accessible from this context.
+        global $DB;
+        $contextids = $ctx->get_parent_context_ids(true);
+        list($contextsql, $contextparams) = $DB->get_in_or_equal($contextids, SQL_PARAMS_NAMED);
+        $categories = $DB->get_records_select(
+            'question_categories',
+            "contextid $contextsql",
+            $contextparams,
+            'contextid, parent, sortorder, name'
+        );
+
+        // Transform categories.
         $result = [];
-        foreach ($question_categories as $contextname => $categories) {
-            foreach($categories as $ids => $categoryname) {
-                $exporter = new mdl_category_dto($ids, $contextname, $categoryname, $ctx);
-                $result[] = $exporter->export($renderer);
-            }
+        foreach ($categories as $cat) {
+            $catcontext = \context::instance_by_id($cat->contextid);
+            $contextname = $catcontext->get_context_name();
+            $ids = $cat->id . ',' . $cat->contextid;
+            $exporter = new mdl_category_dto($ids, $contextname, $cat->name, $ctx);
+            $result[] = $exporter->export($renderer);
         }
         return $result;
     }
