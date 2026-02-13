@@ -31,7 +31,7 @@ use mod_millionaire\external\exporter\mdl_category_dto;
 use mod_millionaire\external\exporter\mdl_question_dto;
 use mod_millionaire\util;
 use moodle_exception;
-use question_edit_contexts;
+use core_question\local\bank\question_edit_contexts;
 use restricted_context_exception;
 use stdClass;
 use function question_category_options;
